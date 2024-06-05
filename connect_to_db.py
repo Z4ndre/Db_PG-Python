@@ -16,7 +16,7 @@ class DataBase():
                 host='localhost',
                 port='5432'
             )
-
+            return self.conn
         except psycopg2.Error as e:
             show_notification(f"EROR: {e}")
 
@@ -72,4 +72,48 @@ class DataBase():
             if self.conn:
                 self.conn.close()
 
+    def get_tables(self, name_file='table_list.txt'):
+        try:
+            self.connect_to_Db()
+            cur = self.conn.cursor()
+            cur.execute(
+                """
+                SELECT table_name
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                """
+            )
+            name_tables = cur.fetchall()
+
+            with open(name_file, 'w') as fi:
+                for table in name_tables:
+                    fi.write(table[0] + '\n')
+
+            show_notification("Список таблиц записан в файл")
+
+        except psycopg2.Error as e:
+            show_notification(f"ERROR: {e}")
+        finally:
+            if self.conn:
+                self.conn.close()
+
+    '''
+    def get_data_from_PostgreSQL(self, script):
+        try:
+            self.connect_to_Db()
+            cur = self.conn.cursor()
+            cur.execute(
+                f"""
+                    {script}
+                    """
+            )
+            text_script = cur.fetchall()
+            return text_script
+
+        except psycopg2.Error as e:
+            show_notification(f"ERROR: {e}")
+        finally:
+            if self.conn:
+                self.conn.close()
+    '''
 
